@@ -50,6 +50,10 @@ else
     TARGET_KERNEL_APPEND_DTB := true
 endif
 
+# depmod_vendor_intermidiates remove
+# signed ko file is not copied to correct path
+BOARD_DO_NOT_STRIP_VENDOR_MODULES := true
+
 ifeq ($(ENABLE_AB), true)
 #A/B related defines
 AB_OTA_UPDATER := true
@@ -184,6 +188,7 @@ BOARD_VENDOR_KERNEL_MODULES := \
     $(KERNEL_MODULES_OUT)/wil6210.ko \
     $(KERNEL_MODULES_OUT)/msm_11ad_proxy.ko \
     $(KERNEL_MODULES_OUT)/rdbg.ko \
+    $(KERNEL_MODULES_OUT)/qca_cld3_wlan.ko \
     $(KERNEL_MODULES_OUT)/mpq-adapter.ko \
     $(KERNEL_MODULES_OUT)/mpq-dmx-hw-plugin.ko
 
@@ -311,7 +316,7 @@ ENABLE_CPUSETS := true
 ENABLE_SCHEDBOOST := true
 
 #Enabling IMS Feature
-TARGET_USES_IMS := false
+TARGET_USES_IMS := true
 
 #Add NON-HLOS files for ota upgrade
 ADD_RADIO_FILES := true
