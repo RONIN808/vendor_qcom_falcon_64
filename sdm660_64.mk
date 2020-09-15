@@ -28,6 +28,11 @@ else
     $(warning "Unknown kernel")
 endif
 
+# Enable RRO for Android R
+ifeq ($(strip $(TARGET_KERNEL_VERSION)), 4.19)
+    TARGET_USES_RRO := true
+endif
+
 ifeq ($(TARGET_KERNEL_VERSION),$(filter $(TARGET_KERNEL_VERSION),4.14 4.19))
   SHIPPING_API_LEVEL :=29
   ifeq (true,$(call math_gt_or_eq,$(SHIPPING_API_LEVEL),29))
@@ -35,6 +40,8 @@ ifeq ($(TARGET_KERNEL_VERSION),$(filter $(TARGET_KERNEL_VERSION),4.14 4.19))
     BOARD_DYNAMIC_PARTITION_ENABLE := true
     # First launch API level
     PRODUCT_SHIPPING_API_LEVEL := $(SHIPPING_API_LEVEL)
+    # Enable virtual-ab by default
+    ENABLE_VIRTUAL_AB := true
   else
     BOARD_DYNAMIC_PARTITION_ENABLE := false
     $(call inherit-product, build/make/target/product/product_launched_with_p.mk)
@@ -86,6 +93,10 @@ DEVICE_PACKAGE_OVERLAYS := device/qcom/sdm660_64/overlay
 # configuration to avoid compilation breakage.
 ifeq ($(ENABLE_VENDOR_IMAGE), true)
 #TARGET_USES_QTIC := false
+endif
+
+ifeq ($(ENABLE_VIRTUAL_AB), true)
+    $(call inherit-product, $(SRC_TARGET_DIR)/product/virtual_ab_ota.mk)
 endif
 
 TARGET_USES_AOSP_FOR_AUDIO := false
@@ -143,6 +154,9 @@ PRODUCT_COPY_FILES += \
 
 PRODUCT_PROPERTY_OVERRIDES += \
     vendor.video.disable.ubwc=1
+
+PRODUCT_PROPERTY_OVERRIDES += \
+    vendor.gralloc.disable_ahardware_buffer=1
 
 ifneq ($(TARGET_DISABLE_DASH), true)
     PRODUCT_BOOT_JARS += qcmediaplayer
@@ -207,11 +221,11 @@ PRODUCT_BOOT_JARS += telephony-ext
 
 PRODUCT_PACKAGES += telephony-ext
 
-ifneq ($(strip $(QCPATH)),)
-PRODUCT_BOOT_JARS += WfdCommon
+#ifneq ($(strip $(QCPATH)),)
+#PRODUCT_BOOT_JARS += WfdCommon
 #Android oem shutdown hook
 #PRODUCT_BOOT_JARS += oem-services
-endif
+#endif
 
 DEVICE_MANIFEST_FILE := device/qcom/sdm660_64/manifest.xml
 ifeq (true,$(call math_gt_or_eq,$(SHIPPING_API_LEVEL),29))
@@ -368,9 +382,9 @@ ifeq ($(ENABLE_AB), true)
 PRODUCT_PACKAGES += update_engine \
                     update_engine_client \
                     update_verifier \
-                    bootctrl.sdm660 \
-                    android.hardware.boot@1.0-impl \
-                    android.hardware.boot@1.0-service
+                    android.hardware.boot@1.1-impl-qti \
+                    android.hardware.boot@1.1-impl-qti.recovery \
+                    android.hardware.boot@1.1-service
 
 PRODUCT_HOST_PACKAGES += \
   brillo_update_payload
@@ -437,6 +451,10 @@ SEC_USERSPACE_BRINGUP_NEW_SP := true
 # Enable telephpony ims feature
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.telephony.ims.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.telephony.ims.xml
+
+ifeq ($(TARGET_KERNEL_VERSION),$(filter $(TARGET_KERNEL_VERSION),4.14 4.19))
+PRODUCT_PACKAGES += init.qti.dcvs.sh
+endif
 
 ###################################################################################
 # This is the End of target.mk file.

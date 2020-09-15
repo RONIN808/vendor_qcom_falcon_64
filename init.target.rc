@@ -279,6 +279,10 @@ service audiod /system/vendor/bin/audiod
 #
 #
 #
+service vendor-sensor-sh /vendor/bin/init.qcom.sensors.sh
+    class core
+    user root
+    oneshot
 #
 #service mdm_helper /system/bin/mdm_helper
 #    class core
@@ -321,6 +325,13 @@ service audiod /system/vendor/bin/audiod
 #   class core
 #   oneshot
 
+service vendor.sensors.qti /vendor/bin/sensors.qti
+    class core
+    user system
+    group system
+    disabled
+
+
 service energy-awareness /system/vendor/bin/energy-awareness
     class main
     user system
@@ -356,6 +367,16 @@ service cnss_diag /system/vendor/bin/cnss_diag -q -f -t HELIUM
    user system
    group system wifi inet sdcard_rw media_rw diag
    oneshot
+
+service dcvs-sh /vendor/bin/init.qti.dcvs.sh
+    class late_start
+    user root
+    group root system
+    disabled
+    oneshot
+
+on property:vendor.dcvs.prop=1
+   start dcvs-sh
 
 service ppd /system/vendor/bin/mm-pp-dpps
     class late_start
