@@ -42,6 +42,8 @@ ifeq ($(TARGET_KERNEL_VERSION),$(filter $(TARGET_KERNEL_VERSION),4.14 4.19))
     PRODUCT_SHIPPING_API_LEVEL := $(SHIPPING_API_LEVEL)
     # Enable virtual-ab by default
     ENABLE_VIRTUAL_AB := true
+    # Enable incremental FS feature
+    PRODUCT_PROPERTY_OVERRIDES += ro.incremental.enable=1
   else
     BOARD_DYNAMIC_PARTITION_ENABLE := false
     $(call inherit-product, build/make/target/product/product_launched_with_p.mk)
@@ -138,7 +140,8 @@ PRODUCT_COPY_FILES += \
     device/qcom/sdm660_64/media_codecs_sdm660_v1.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_sdm660_v1.xml \
     device/qcom/sdm660_64/media_codecs_performance.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_performance.xml \
     device/qcom/sdm660_64/media_codecs_performance_sdm660_v1.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_performance_sdm660_v1.xml \
-    device/qcom/sdm660_64/media_codecs_vendor_audio.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_vendor_audio.xml
+    device/qcom/sdm660_64/media_codecs_vendor_audio.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_vendor_audio.xml \
+    device/qcom/common/media/media_profiles.xml:$(TARGET_COPY_OUT_ODM)/etc/media_profiles_V1_0.xml
 
 # Vendor property overrides
   PRODUCT_PROPERTY_OVERRIDES += debug.stagefright.omx_default_rank=0
@@ -154,9 +157,6 @@ PRODUCT_COPY_FILES += \
 
 PRODUCT_PROPERTY_OVERRIDES += \
     vendor.video.disable.ubwc=1
-
-PRODUCT_PROPERTY_OVERRIDES += \
-    vendor.gralloc.disable_ahardware_buffer=1
 
 ifneq ($(TARGET_DISABLE_DASH), true)
     PRODUCT_BOOT_JARS += qcmediaplayer
@@ -228,6 +228,10 @@ PRODUCT_PACKAGES += telephony-ext
 #endif
 
 DEVICE_MANIFEST_FILE := device/qcom/sdm660_64/manifest.xml
+ifeq ($(strip $(TARGET_KERNEL_VERSION)), 4.19)
+  DEVICE_MANIFEST_FILE += device/qcom/sdm660_64/manifest_soundtrigger.xml
+endif
+
 ifeq (true,$(call math_gt_or_eq,$(SHIPPING_API_LEVEL),29))
   DEVICE_MANIFEST_FILE += device/qcom/sdm660_64/manifest_target_level_4.xml
 else
@@ -442,11 +446,19 @@ PRODUCT_PACKAGES += vndk_package
 
 TARGET_MOUNT_POINTS_SYMLINKS := false
 
+# Disable skip validate
+PRODUCT_PROPERTY_OVERRIDES += \
+  vendor.display.disable_skip_validate=1
+
 # For bringup
 WLAN_BRINGUP_NEW_SP := true
 DISP_BRINGUP_NEW_SP := true
 CAM_BRINGUP_NEW_SP := true
 SEC_USERSPACE_BRINGUP_NEW_SP := true
+
+#vendor prop to disable advanced network scanning
+PRODUCT_PROPERTY_OVERRIDES += \
+    persist.vendor.radio.enableadvancedscan=false
 
 # Enable telephpony ims feature
 PRODUCT_COPY_FILES += \
