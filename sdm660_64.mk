@@ -171,13 +171,15 @@ PRODUCT_PACKAGES += \
     init.target_ota.rc
 endif
 
+ifeq (false,$(call math_gt_or_eq,$(SHIPPING_API_LEVEL),29))
 # Power
 PRODUCT_PACKAGES += \
     android.hardware.power@1.0-service \
     android.hardware.power@1.0-impl
+endif
 
 # privapp-permissions whitelisting
-#PRODUCT_PROPERTY_OVERRIDES += ro.control_privapp_permissions=enforce
+PRODUCT_PROPERTY_OVERRIDES += ro.control_privapp_permissions=enforce
 
 # Override heap growth limit due to high display density on device
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -204,9 +206,6 @@ PRODUCT_CHARACTERISTICS := nosdcard
 # Enable features in video HAL that can compile only on this platform
 TARGET_USES_MEDIA_EXTENSIONS := true
 
-# WLAN chipset
-WLAN_CHIPSET := qca_cld3
-
 #
 # system prop for opengles version
 #
@@ -221,11 +220,11 @@ PRODUCT_BOOT_JARS += telephony-ext
 
 PRODUCT_PACKAGES += telephony-ext
 
-#ifneq ($(strip $(QCPATH)),)
-#PRODUCT_BOOT_JARS += WfdCommon
+ifneq ($(strip $(QCPATH)),)
+PRODUCT_BOOT_JARS += WfdCommon
 #Android oem shutdown hook
 #PRODUCT_BOOT_JARS += oem-services
-#endif
+endif
 
 DEVICE_MANIFEST_FILE := device/qcom/sdm660_64/manifest.xml
 ifeq ($(strip $(TARGET_KERNEL_VERSION)), 4.19)
@@ -256,19 +255,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     device/qcom/sdm660_64/excluded-input-devices.xml:system/etc/excluded-input-devices.xml
 
-# WLAN host driver
-ifneq ($(WLAN_CHIPSET),)
-PRODUCT_PACKAGES += $(WLAN_CHIPSET)_wlan.ko
-endif
-
-# WLAN driver configuration file
-PRODUCT_COPY_FILES += \
-    device/qcom/sdm660_64/WCNSS_qcom_cfg.ini:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/WCNSS_qcom_cfg.ini
-
-PRODUCT_PACKAGES += \
-    wpa_supplicant_overlay.conf \
-    p2p_supplicant_overlay.conf
-
 #audio related module
 PRODUCT_PACKAGES += \
     libvolumelistener
@@ -282,10 +268,18 @@ PRODUCT_PACKAGES += \
     android.hardware.graphics.composer@2.1-service \
     android.hardware.memtrack@1.0-impl \
     android.hardware.memtrack@1.0-service \
-    android.hardware.light@2.0-impl \
-    android.hardware.light@2.0-service \
     android.hardware.configstore@1.0-service \
     android.hardware.broadcastradio@1.0-impl
+
+ifeq (true,$(call math_gt_or_eq,$(SHIPPING_API_LEVEL),29))
+#Enable Light AIDL HAL
+PRODUCT_PACKAGES += android.hardware.lights-service.qti
+else
+#Enable Light HIDL HAL
+PRODUCT_PACKAGES += \
+android.hardware.light@2.0-impl \
+android.hardware.light@2.0-service
+endif
 
 PRODUCT_PACKAGES += \
     vendor.display.color@1.0-service \
@@ -361,25 +355,6 @@ PRODUCT_PACKAGES += \
 #       $(QCPATH)/qrdplus/globalization/multi-language/res-overlay \
 #      $(PRODUCT_PACKAGE_OVERLAYS)
 
-# Enable logdumpd service only for non-perf bootimage
-ifeq ($(findstring perf,$(KERNEL_DEFCONFIG)),)
-    ifeq ($(TARGET_BUILD_VARIANT),user)
-        PRODUCT_DEFAULT_PROPERTY_OVERRIDES+= \
-            ro.logdumpd.enabled=0
-    else
-        PRODUCT_DEFAULT_PROPERTY_OVERRIDES+= \
-            ro.logdumpd.enabled=1
-    endif
-else
-    PRODUCT_DEFAULT_PROPERTY_OVERRIDES+= \
-        ro.logdumpd.enabled=0
-endif
-
-#for wlan
-PRODUCT_PACKAGES += \
-        wificond \
-        wifilogd \
-        wifilearner
 
 ifeq ($(ENABLE_AB), true)
 #A/B related packages
@@ -401,8 +376,9 @@ PRODUCT_PACKAGES += \
 endif
 
 #Healthd packages
-PRODUCT_PACKAGES += android.hardware.health@2.0-impl \
-                    android.hardware.health@2.0-service \
+PRODUCT_PACKAGES += android.hardware.health@2.1-impl \
+                    android.hardware.health@2.1-service \
+                    android.hardware.health@2.1-impl.recovery \
                     libhealthd.msm
 
 #FEATURE_OPENGLES_EXTENSION_PACK support string config file
@@ -438,9 +414,6 @@ SDM660_DISABLE_MODULE := true
 
 PRODUCT_COMPATIBLE_PROPERTY_OVERRIDE:=true
 
-# Enable STA + SAP Concurrency.
-WIFI_HIDL_FEATURE_DUAL_INTERFACE := true
-
 # Enable vndk-sp Libraries
 PRODUCT_PACKAGES += vndk_package
 
@@ -449,6 +422,11 @@ TARGET_MOUNT_POINTS_SYMLINKS := false
 # Disable skip validate
 PRODUCT_PROPERTY_OVERRIDES += \
   vendor.display.disable_skip_validate=1
+
+#-------------------------------------------------------------------------------
+# wlan specific
+#-------------------------------------------------------------------------------
+include device/qcom/wlan/sdm660_64/wlan.mk
 
 # For bringup
 WLAN_BRINGUP_NEW_SP := true
