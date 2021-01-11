@@ -34,7 +34,7 @@ ifeq ($(strip $(TARGET_KERNEL_VERSION)), 4.19)
 endif
 
 ifeq ($(TARGET_KERNEL_VERSION),$(filter $(TARGET_KERNEL_VERSION),4.14 4.19))
-  SHIPPING_API_LEVEL :=29
+  SHIPPING_API_LEVEL :=30
   ifeq (true,$(call math_gt_or_eq,$(SHIPPING_API_LEVEL),29))
     # Dynamic-partition enabled by default for new launch config
     BOARD_DYNAMIC_PARTITION_ENABLE := true
@@ -234,7 +234,9 @@ ifeq ($(strip $(TARGET_KERNEL_VERSION)), 4.19)
   DEVICE_MANIFEST_FILE += device/qcom/sdm660_64/manifest_soundtrigger.xml
 endif
 
-ifeq (true,$(call math_gt_or_eq,$(SHIPPING_API_LEVEL),29))
+ifeq ($(strip $(SHIPPING_API_LEVEL)), 30)
+  DEVICE_MANIFEST_FILE += device/qcom/sdm660_64/manifest_target_level_5.xml
+else ifeq ($(strip $(SHIPPING_API_LEVEL)), 29)
   DEVICE_MANIFEST_FILE += device/qcom/sdm660_64/manifest_target_level_4.xml
 else
   DEVICE_MANIFEST_FILE += device/qcom/sdm660_64/manifest_target_level_3.xml
@@ -284,7 +286,6 @@ PRODUCT_PACKAGES += \
     android.hardware.graphics.composer@2.1-service \
     android.hardware.memtrack@1.0-impl \
     android.hardware.memtrack@1.0-service \
-    android.hardware.configstore@1.0-service \
     android.hardware.broadcastradio@1.0-impl
 
 ifeq (true,$(call math_gt_or_eq,$(SHIPPING_API_LEVEL),29))
@@ -327,6 +328,14 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.vendor.sensors.facing=false \
     ro.vendor.sensors.cmc=false \
     ro.vendor.sdk.sensors.gestures=false
+
+# SF properties
+ifeq ($(call math_gt,$(SHIPPING_API_LEVEL),29),true)
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.surface_flinger.force_hwc_copy_for_virtual_displays=true \
+    ro.surface_flinger.max_frame_buffer_acquired_buffers=3 \
+    ro.surface_flinger.max_virtual_display_dimension=4096
+endif
 
 # FBE support
 PRODUCT_COPY_FILES += \
