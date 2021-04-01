@@ -54,8 +54,6 @@ else
     TARGET_KERNEL_APPEND_DTB := true
 endif
 
-# depmod_vendor_intermidiates remove
-# signed ko file is not copied to correct path
 BOARD_DO_NOT_STRIP_VENDOR_MODULES := true
 
 ifeq ($(ENABLE_AB), true)
@@ -200,7 +198,7 @@ BOARD_VENDOR_KERNEL_MODULES := \
     $(KERNEL_MODULES_OUT)/mpq-adapter.ko \
     $(KERNEL_MODULES_OUT)/mpq-dmx-hw-plugin.ko
 
-ifeq ($(TARGET_KERNEL_VERSION),$(filter $(TARGET_KERNEL_VERSION),4.14))
+ifeq ($(TARGET_KERNEL_VERSION),$(filter $(TARGET_KERNEL_VERSION),4.14 4.19))
 BOARD_VENDOR_KERNEL_MODULES += \
     $(KERNEL_MODULES_OUT)/audio_apr.ko \
     $(KERNEL_MODULES_OUT)/audio_wglink.ko \
