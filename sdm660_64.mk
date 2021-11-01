@@ -500,6 +500,7 @@ PRODUCT_PACKAGES += init.qti.dcvs.sh
 endif
 
 PRODUCT_PACKAGES += libnbaio
+PRODUCT_PACKAGES += libnative-api
 
 # Target specific Netflix custom property
 PRODUCT_PROPERTY_OVERRIDES += \
