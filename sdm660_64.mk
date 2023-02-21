@@ -1,4 +1,4 @@
-ifneq ( ,$(filter Tiramisu T 13, $(PLATFORM_VERSION)))
+ifneq ( ,$(filter UpsideDownCake U 14 Tiramisu T 13, $(PLATFORM_VERSION)))
 PRODUCT_BROKEN_VERIFY_USES_LIBRARIES := true
 endif
 ALLOW_MISSING_DEPENDENCIES := true
