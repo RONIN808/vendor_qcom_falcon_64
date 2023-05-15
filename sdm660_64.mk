@@ -499,6 +499,13 @@ PRODUCT_PACKAGES += libnbaio
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.netflix.bsp_rev=Q660-13149-1
 
+#------------------------
+# location specific
+#------------------------
+ifneq ( ,$(filter U UpsideDownCake 14,$(PLATFORM_VERSION)))
+FEATURE_SLIM_AP := false
+endif
+
 ###################################################################################
 # This is the End of target.mk file.
 # Now, Pickup other split product.mk files:
