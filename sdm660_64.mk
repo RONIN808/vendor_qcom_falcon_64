@@ -506,6 +506,11 @@ ifneq ( ,$(filter U UpsideDownCake 14,$(PLATFORM_VERSION)))
 FEATURE_SLIM_AP := false
 endif
 
+# Enable support for APEX updates
+ifneq ( ,$(filter U UpsideDownCake 14,$(PLATFORM_VERSION)))
+$(call inherit-product, $(SRC_TARGET_DIR)/product/updatable_apex.mk)
+endif
+
 ###################################################################################
 # This is the End of target.mk file.
 # Now, Pickup other split product.mk files:
