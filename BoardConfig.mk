@@ -238,6 +238,12 @@ BOARD_VENDOR_KERNEL_MODULES += \
     $(KERNEL_MODULES_OUT)/audio_wcd_core.ko
 endif
 
+ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
+     ifeq (,$(findstring perf_defconfig, $(KERNEL_DEFCONFIG)))
+         BOARD_VENDOR_KERNEL_MODULES += $(KERNEL_MODULES_OUT)/lkdtm.ko
+     endif
+endif
+
 TARGET_USES_ION := true
 TARGET_USES_NEW_ION_API :=true
 TARGET_USES_QCOM_DISPLAY_BSP := true
